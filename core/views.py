@@ -13,7 +13,6 @@ euro=int(float(cambio_moneda("F072.CLP.EUR.N.O.D")))
 @csrf_exempt
 def index (request):
     herramientas = Herramienta.objects.all()
-    cambio_moneda("F073.TCO.PRE.Z.D")
     if request.method == 'POST':
         moneda = request.POST.get('moneda')
         print("valor moneda: ",moneda)
