@@ -34,28 +34,31 @@ def index (request):
 
 def index(request):
 
-    url = 'https://jdmrvwcw-8000.brs.devtunnels.ms/lista_productos/'
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        productos = [type('', (object,), item)() for item in data]
-        if request.method == 'POST':
-            moneda = request.POST.get('moneda')
-            print("valor moneda: ",moneda)
-            if moneda == '2': 
-                for herramienta in productos:
-                    herramienta.precio = round((herramienta.precio / dolar),2)
-                    print("precio: ",herramienta.precio)
-            elif moneda == '3': 
-                for herramienta in productos:
-                    herramienta.precio = round((herramienta.precio / euro),2)
-                    print("precio: ",herramienta.precio)
-            else :
-                for herramienta in productos:
-                    herramienta.precio = herramienta.precio
+    url = 'http://127.0.0.1:8001/lista_productos/'
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            productos = [type('', (object,), item)() for item in data]
+            if request.method == 'POST':
+                moneda = request.POST.get('moneda')
+                print("valor moneda: ",moneda)
+                if moneda == '2': 
+                    for herramienta in productos:
+                        herramienta.precio = round((herramienta.precio / dolar),2)
+                        print("precio: ",herramienta.precio)
+                elif moneda == '3': 
+                    for herramienta in productos:
+                        herramienta.precio = round((herramienta.precio / euro),2)
+                        print("precio: ",herramienta.precio)
+                else :
+                    for herramienta in productos:
+                        herramienta.precio = herramienta.precio
 
-        return render(request, 'core/index.html', {'herra': productos})
-    else:
-        print('Error al consultar la API')
+            return render(request, 'core/index.html', {'herra': productos})
+        else:
+            print('Error al consultar la API')
+            return render(request, 'core/error.html')
+    except Exception as e:
+        print('Ocurrió un error:', e)
         return render(request, 'core/error.html')
-
