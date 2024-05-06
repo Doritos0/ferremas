@@ -15,21 +15,27 @@
     <div class="container-fluid">
 
         <div class="row d-flex align-items-center justify-content-center bg-success">
-            <div style="width: 95%;">
-                <h1 class="text-white">Conversion de Monedas</h1>
-                <form class="form-control" method="post" style="margin-bottom: 15px;">
-                    {% csrf_token %}
-                    <div class="d-flex align-items-center">
-                        <select class="form-select" name="moneda">
-                            <option selected value="0">Seleccione una opción</option>
-                            <option value="1">CLP</option>
-                            <option value="2">USD</option>
-                            <option value="3">EUR</option>
-                        </select>
-                
-                        <input type="submit" name="CambioMoneda" class="btn btn-outline-success" value="Cambiar Moneda" ></input>
+            <div class="row">
+                <div class="col-12" style="margin-top: 10px;">
+                    <div style="float: left;">
+                        <h1 class="text-white">FERRETERIA FERREMAS</h1>
                     </div>
-                </form>
+                    <div class="col-lg-3 col-md-4 col-sm-12" style="float: right;">
+                        <form class="form-control" method="post" style="margin-bottom: 15px;">
+                            {% csrf_token %}
+                            <div class="d-flex align-items-center">
+                                <select class="form-select" name="moneda">
+                                    <option selected value="0">Seleccione una opción</option>
+                                    <option value="1">CLP</option>
+                                    <option value="2">USD</option>
+                                    <option value="3">EUR</option>
+                                </select>
+                        
+                                <input type="submit" name="CambioMoneda" class="btn btn-outline-success" value="Cambiar Moneda" ></input>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
