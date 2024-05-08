@@ -23,15 +23,15 @@
                     <div class="col-lg-3 col-md-4 col-sm-12" style="float: right;">
                         <form class="form-control" method="post" style="margin-bottom: 15px;">
                             {% csrf_token %}
-                            <div class="d-flex align-items-center">
-                                <select class="form-select" name="moneda">
+                            <div class="d-flex align-items-center justify-content-between"> 
+                                <select class="form-select" name="moneda" style="margin-right: 10px;">
                                     <option selected value="0">Seleccione una opción</option>
                                     <option value="1">CLP</option>
                                     <option value="2">USD</option>
                                     <option value="3">EUR</option>
                                 </select>
-                        
-                                <input type="submit" name="CambioMoneda" class="btn btn-outline-success" value="Cambiar Moneda" ></input>
+                            
+                                <input type="submit" name="CambioMoneda" class="btn btn-outline-success" value="Cambiar Moneda"></input>
                             </div>
                         </form>
                     </div>
