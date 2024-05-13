@@ -48,10 +48,27 @@
                         Herramienta {{ her.nombre }}
                     </div>
                     <div class="card-body text-dark" style="background-color: white;">
-                      <h5 class="card-title">Precio ${{ her.precio }}</h5>
-                      <p class="card-text">Stock: {{ her.stock }}</p>
+                        <h5 class="card-title">Precio ${{ her.precio }}</h5>
+                        <!-- mas adelante hacer if para poner +99 -->
+                        {% for n in stocks %}
+                            {% if n.id_producto == her.id_producto %}
+                                <p class="card-text">Stock: {{ n.cantidad }}</p>
+                            {% else %}
+                                <p class="card-text">Stock: 0</p>
+                            {% endif %}
+                        {% endfor %}
                       <hr>
+                      <h1>{{ fecha_actual }}</h1>
                       <p class="card-text">{{ her.id_tipo }}</p>
+                      {% for n in precios %}
+                        {% if n.id_producto == her.id_producto%}
+                            {% if fecha_actual >= n.fec_ini and n.fec_ter >= fecha_actual or fecha_actual >= n.fec_ini and n.fec_ter == None%}
+                                <p class="card-text">{{ n.precio }}</p>
+                            {% elif n.precio == None %}
+                                <p class="card-text">0</p>
+                            {%endif %}
+                        {%endif %}
+                      {% endfor %}
                     </div>
                 </div>
             </div>
