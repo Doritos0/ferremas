@@ -78,7 +78,7 @@ def index(request):
                     for n in precios:
                         n.precio = round((n.precio / euro), 2)
 
-                        #MANEJO DE PRECIOS
+                        #MANEJO DE PRECIOS PRODUCTOS QUE SI TIENEN PRECIO
             for p in productos:
                 for n in precios:
                     if n.id_producto == p.id_producto:
@@ -87,32 +87,43 @@ def index(request):
                                 valores = Valores(n.id_producto, n.precio)
                                 lista_precios.append(valores)
                                 print("SE AGREGO UN PRECIO CORRECTO A LA LISTA 💙💙")
-                            else:
+                            elif fecha_actual < n.fec_ini:
                                 print("💙")
-                                print(fecha_actual)
-                                print(n.fec_ini)
+                                valores = Valores(n.id_producto, "Sin Precio")
+                                lista_precios.append(valores)
                         elif fecha_actual > n.fec_ini and fecha_actual < n.fec_ter:
                             print("💚")
                             valores = Valores(n.id_producto, n.precio)
                             lista_precios.append(valores)
                             print("SE AGREGO UN PRECIO CORRECTO A LA LISTA 💙💙")
-                        elif fecha_actual > n.fec_ini and fecha_actual > n.fec_ter:
-                            print("💚 AHORA DEBERIA FUNCIONAR")
                         else:
                             print("❤️")
                             print("FUNCIONA")
                             valores = Valores("No hay Precios", "Sin Precio")
                             lista_precios.append(valores)
 
-                if not precios:
-                    print("💙")
-                    valores = Valores("No hay Precios", "Sin Precio")
+                        #MANEJO PRECIO PRODUCTOS SIN PRECIO INGRESADO
+            for p in productos:
+                for n in lista_precios:
+                    if p.id_producto == n.id_producto:
+                        pass
+                    else:
+                        valores = Valores(p.id_producto, "Sin Precio")
+                        lista_precios.append(valores)
+
+
+            if not precios:
+                for n in productos:
+                    print("💙💙💙💙💙💙💙💙💙")
+                    valores = Valores(n.id_producto, "Sin Precio")
                     lista_precios.append(valores)
 
             
             for n in lista_precios:
                 print("ID: ",n.id_producto)
                 print("VALOR: ",n.valor)
+            
+            
 
             return render(request, 'core/index.html', {'herra': productos, 'tipos':tipos, 'stocks': stocks,'precios': lista_precios, 'fecha_actual': fecha_actual})
         else:
