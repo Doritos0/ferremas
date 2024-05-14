@@ -48,7 +48,11 @@
                     <div class="card-body text-dark" style="background-color: white;">
                             {% for n in precios %}
                                 {% if n.id_producto == her.id_producto %}
+                                    {% if n.valor == 'Sin Precio' %}
+                                        <p class="card-text">Sin Precio</p>
+                                    {% else %}
                                         <p class="card-text">Precio ${{ n.valor }}</p>
+                                    {% endif %}
                                 {% else %}
                                     <p class="card-text">Sin Precio</p>
                                 {% endif %}

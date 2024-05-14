@@ -83,25 +83,33 @@ def index(request):
                 for n in precios:
                     if n.id_producto == p.id_producto:
                         if n.fec_ter is None:
-                            if fecha_actual < n.fec_ini:
-                                print("LOLOL")
+                            if fecha_actual > n.fec_ini:
+                                valores = Valores(n.id_producto, n.precio)
+                                lista_precios.append(valores)
                             else:
                                 print("💙")
                                 print(fecha_actual)
                                 print(n.fec_ini)
-                                valores = Valores(n.id_producto, n.precio)
-                                lista_precios.append(valores)
                         elif fecha_actual > n.fec_ini and fecha_actual < n.fec_ter:
                             print("💚")
                             valores = Valores(n.id_producto, n.precio)
                             lista_precios.append(valores)
+                        else:
+                            print("❤️")
+                            print("FUNCIONA")
+                            valores = Valores("No hay Precios", "Sin Precio")
+                            lista_precios.append(valores)
                     
-                    else:
-                        valores = Valores(n.id_producto, "Sin Precio")
+                            
+                if not precios:
+                    print("💙")
+                    valores = Valores("No hay Precios", "Sin Precio")
+                    lista_precios.append(valores)
 
             
             for n in lista_precios:
-                print(n)
+                print("ID: ",n.id_producto)
+                print("VALOR: ",n.valor)
 
             return render(request, 'core/index.html', {'herra': productos, 'tipos':tipos, 'stocks': stocks,'precios': lista_precios, 'fecha_actual': fecha_actual})
         else:
