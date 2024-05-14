@@ -94,13 +94,13 @@ def index(request):
                             print("💚")
                             valores = Valores(n.id_producto, n.precio)
                             lista_precios.append(valores)
+                        elif fecha_actual > n.fec_ini and fecha_actual > n.fec_ter:
+                            print("💚 AHORA DEBERIA FUNCIONAR")
                         else:
                             print("❤️")
                             print("FUNCIONA")
                             valores = Valores("No hay Precios", "Sin Precio")
                             lista_precios.append(valores)
-                    
-                            
                 if not precios:
                     print("💙")
                     valores = Valores("No hay Precios", "Sin Precio")
