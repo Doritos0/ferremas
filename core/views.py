@@ -97,12 +97,11 @@ def index(request):
             #ESTAS ID TIENEN PRECIO
             for n in lista_precios:
                 lista_idconprecios.append(n.id_producto)
-            print(lista_idconprecios)
 
             #ESTAS ID TIENEN STOCK REGISTRADO
             for n in lista_stocks:
                 lista_idconstocks.append(n.id_producto)
-            print("💜💜💜💜")
+            print("LISTA PRODUCTOS CON STOCK REGISTRADO")
             print(lista_idconstocks)
 
 
@@ -120,29 +119,31 @@ def index(request):
                     if p in lista_idconprecios:
                         print("Esto Tiene Precio 💙")
                     else:
-                        print("ESTO NO TIENE PRECIO, SE LE ASIGNA SIN PRECIO ❤️")
+                        #print("ESTO NO TIENE PRECIO, SE LE ASIGNA SIN PRECIO ❤️")
                         valores = Valores(p, "Sin Precio")
                         lista_precios.append(valores)
                 
 
             # SI STOCKS ES VACIO, LE AGREGA A TODOS SIN STOCKS
             if not stocks:
-                # Crear un diccionario ficticio
-                stock_ficticio = {'id_producto': 'sin id', 'cantidad': 'sin cantidad'}
-                # Convertir el diccionario a un objeto
-                stock_objeto_ficticio = type('', (object,), stock_ficticio)()
-                # Agregar el objeto ficticio a la lista stocks
-                stocks.append(stock_objeto_ficticio)
+                stock=Stocks("Sin ID", "Sin Stock")
+                lista_stocks.append(stock)
             #SI STOCKS NO ESTA VACIO, VERIFICA SI TIENEN UN STOCK REGISTRADO, Y SI NO TIENE UN
             #STOCK REGISTRADO LES ASIGNA SIN STOCK
             else:
                 for p in lista_idprod:
+                    print("ESTOS SON LOS IDS DE PRODUCTOS ESTE MENSAJE DEBERIA SALIR 3 VECES")
+                    print(p)
                     if p in lista_idconstocks:
                         print("Esto Tiene Stock 💙")
                     else:
                         print("Esto No tiene Stock Registrado")
-                        stock=Stocks(n.id_producto, n.cantidad)
+                        stock=Stocks(p, "Sin Stock")
                         lista_stocks.append(stock)
+            
+            print("💜💜💜💜")
+            for n in lista_stocks:
+                print("ID ",n.id_producto," CANTIDAD ",n.cantidad)
 
             return render(request, 'core/index.html', {'herra': productos, 'tipos':tipos, 'stocks': lista_stocks,'precios': lista_precios, 'fecha_actual': fecha_actual})
         else:
