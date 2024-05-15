@@ -62,11 +62,23 @@ def index(request):
 
             #LISTA_PRECIOS QUE LE PASARE AL HTML
             lista_precios = []
+
             
             productos = [type('', (object,), item)() for item in data_productos]
             tipos = [type('', (object,), item)() for item in data_tipos]
             stocks = [type('', (object,), item)() for item in data_stocks]
             precios = [type('', (object,), item)() for item in data_precios]
+
+            
+            #LISTA ID_PRODUCTOS PARA AGREGARLE UN PRECIO A LOS QUE NO LO TIENEN
+            lista_idprod = []
+
+            #CREACION LISTA CON IDS QUE SI TIENEN PRECIO
+            lista_idconprecios = []
+
+            for n in productos:
+                lista_idprod.append(n.id_producto)
+            
 
                         # Manejo del cambio de moneda
             if request.method == 'POST':
@@ -101,7 +113,7 @@ def index(request):
                             print("FUNCIONA")
                             valores = Valores("No hay Precios", "Sin Precio")
                             lista_precios.append(valores)
-
+            '''
                         #MANEJO PRECIO PRODUCTOS SIN PRECIO INGRESADO
             for p in productos:
                 for n in lista_precios:
@@ -110,20 +122,38 @@ def index(request):
                     else:
                         valores = Valores(p.id_producto, "Sin Precio")
                         lista_precios.append(valores)
+            
+            for p in lista_precios:
+                for n in lista_idprod:
+                    if p.id_producto == n:
+                        print("Este Producto Ya tiene precio")
+                    else:
+                        valores = Valores(p.id_producto, "Sin Precio")
+                        lista_precios.append(valores)
+            '''
+            #ESTAS ID TIENEN PRECIO
+            for n in lista_precios:
+                lista_idconprecios.append(n.id_producto)
+            print(lista_idconprecios)
 
+            for n in lista_precios:
+                print("Id: ",n.id_producto,"\nValor: ",n.valor)
+
+            
 
             if not precios:
                 for n in productos:
                     print("💙💙💙💙💙💙💙💙💙")
                     valores = Valores(n.id_producto, "Sin Precio")
                     lista_precios.append(valores)
-
-            
-            for n in lista_precios:
-                print("ID: ",n.id_producto)
-                print("VALOR: ",n.valor)
-            
-            
+            else:
+                for p in lista_idprod:
+                    if p in lista_idconprecios:
+                        print("Esto Tiene Precio 💙💙💙💙💙💙💙💙💙")
+                    else:
+                        print("❤️")
+                        valores = Valores(p, "Sin Precio")
+                        lista_precios.append(valores)
 
             return render(request, 'core/index.html', {'herra': productos, 'tipos':tipos, 'stocks': stocks,'precios': lista_precios, 'fecha_actual': fecha_actual})
         else:
