@@ -145,6 +145,11 @@ def index(request):
             for n in lista_stocks:
                 print("ID ",n.id_producto," CANTIDAD ",n.cantidad)
 
+            '''
+            MAS ADELANTE CREAR FUNCION PARA MANEJAR PRECIOS Y STOCKS
+            EN UTILS.PY PARA SIMPLIFICAR EL VIEWS.PY
+            '''
+
             return render(request, 'core/index.html', {'herra': productos, 'tipos':tipos, 'stocks': lista_stocks,'precios': lista_precios, 'fecha_actual': fecha_actual})
         else:
             print('Error al consultar la API')
