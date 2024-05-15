@@ -10,33 +10,16 @@ from datetime import datetime
 dolar=int(float(cambio_moneda("F073.TCO.PRE.Z.D")))
 euro=int(float(cambio_moneda("F072.CLP.EUR.N.O.D")))
 
+#CLASES CREADAS PARA FACILITAR HTML
 class Valores:
     def __init__(self, id_producto, valor):
         self.id_producto = id_producto
         self.valor = valor
 
-"""
-# Create your views here.
-@csrf_exempt
-def index (request):
-    herramientas = Herramienta.objects.all()
-    if request.method == 'POST':
-        moneda = request.POST.get('moneda')
-        print("valor moneda: ",moneda)
-        if moneda == '2': 
-            for herramienta in herramientas:
-                herramienta.precio = round((herramienta.precio / dolar),2)
-                print("precio: ",herramienta.precio)
-        elif moneda == '3': 
-            for herramienta in herramientas:
-                herramienta.precio = round((herramienta.precio / euro),2)
-                print("precio: ",herramienta.precio)
-        else :
-            for herramienta in herramientas:
-                herramienta.precio = herramienta.precio
-    return render(request, 'core/index.html', {'herra': herramientas})
-
-    """
+class Stocks:
+    def __init__(self, id_producto, cantidad):
+        self.id_producto = id_producto
+        self.cantidad = cantidad
 
 def index(request):
 
@@ -62,25 +45,25 @@ def index(request):
 
             #LISTA_PRECIOS QUE LE PASARE AL HTML
             lista_precios = []
+            lista_stocks = []
 
-            
+            #CREACION LISTA CON IDS QUE SI TIENEN PRECIO // PARA LA EXCEPCION DONDE UN PRODUCTO NO TENGA PRECIO REGISTRADO
+            lista_idconprecios = []
+            lista_idconstocks = []
+
+            #LISTA ID_PRODUCTOS PARA AGREGARLE UN PRECIO / STOCKS A LOS QUE NO LO TIENEN
+            lista_idprod = []
+
             productos = [type('', (object,), item)() for item in data_productos]
             tipos = [type('', (object,), item)() for item in data_tipos]
             stocks = [type('', (object,), item)() for item in data_stocks]
             precios = [type('', (object,), item)() for item in data_precios]
 
-            
-            #LISTA ID_PRODUCTOS PARA AGREGARLE UN PRECIO A LOS QUE NO LO TIENEN
-            lista_idprod = []
-
-            #CREACION LISTA CON IDS QUE SI TIENEN PRECIO
-            lista_idconprecios = []
-
+            #AGREGO TODOS LOS PRODUCTOS A UNA LISTA PARA REALIZAR LA VERIFICACION DE PRECIOS Y STOCKS
             for n in productos:
                 lista_idprod.append(n.id_producto)
-            
-
-                        # Manejo del cambio de moneda
+                
+                        # MANEJO DEL CAMBIO DE MONEDA
             if request.method == 'POST':
                 moneda = request.POST.get('moneda')
                 if moneda == '2': 
@@ -102,28 +85,27 @@ def index(request):
                             print("ESTE PRECIO NO ES VALIDO AHORA MISMO❤️❤️")
                             valores = Valores(p.nombre, "Sin Precio")
                             lista_precios.append(valores)
-            '''
-                        #MANEJO PRECIO PRODUCTOS SIN PRECIO INGRESADO
+                        
+                        #MANEJO DE STOCKS PRODUCTOS QUE SI TIENE STOCK
             for p in productos:
-                for n in lista_precios:
-                    if p.id_producto == n.id_producto:
-                        pass
-                    else:
-                        valores = Valores(p.id_producto, "Sin Precio")
-                        lista_precios.append(valores)
-            
-            for p in lista_precios:
-                for n in lista_idprod:
-                    if p.id_producto == n:
-                        print("Este Producto Ya tiene precio")
-                    else:
-                        valores = Valores(p.id_producto, "Sin Precio")
-                        lista_precios.append(valores)
-            '''
+                for n in stocks:
+                    if n.id_producto == p.id_producto:
+                        print("Este Producto si tiene un stocks registrado")
+                        stock=Stocks(n.id_producto, n.cantidad)
+                        lista_stocks.append(stock)
+
             #ESTAS ID TIENEN PRECIO
             for n in lista_precios:
                 lista_idconprecios.append(n.id_producto)
             print(lista_idconprecios)
+
+            #ESTAS ID TIENEN STOCK REGISTRADO
+            for n in lista_stocks:
+                lista_idconstocks.append(n.id_producto)
+            print("💜💜💜💜")
+            print(lista_idconstocks)
+
+
 
             #SI PRECIOS ES VACIO, LE AGREGA A TODOS LOS PRODUCTOS UN SIN PRECIO
             if not precios:
@@ -141,13 +123,28 @@ def index(request):
                         print("ESTO NO TIENE PRECIO, SE LE ASIGNA SIN PRECIO ❤️")
                         valores = Valores(p, "Sin Precio")
                         lista_precios.append(valores)
-
-            print("LISTA DEFINITIVA DE PRECIOS")
-            for n in lista_precios:
-                print("Producto: ",n.id_producto," Valor: ",n.valor)
-
                 
-            return render(request, 'core/index.html', {'herra': productos, 'tipos':tipos, 'stocks': stocks,'precios': lista_precios, 'fecha_actual': fecha_actual})
+
+            # SI STOCKS ES VACIO, LE AGREGA A TODOS SIN STOCKS
+            if not stocks:
+                # Crear un diccionario ficticio
+                stock_ficticio = {'id_producto': 'sin id', 'cantidad': 'sin cantidad'}
+                # Convertir el diccionario a un objeto
+                stock_objeto_ficticio = type('', (object,), stock_ficticio)()
+                # Agregar el objeto ficticio a la lista stocks
+                stocks.append(stock_objeto_ficticio)
+            #SI STOCKS NO ESTA VACIO, VERIFICA SI TIENEN UN STOCK REGISTRADO, Y SI NO TIENE UN
+            #STOCK REGISTRADO LES ASIGNA SIN STOCK
+            else:
+                for p in lista_idprod:
+                    if p in lista_idconstocks:
+                        print("Esto Tiene Stock 💙")
+                    else:
+                        print("Esto No tiene Stock Registrado")
+                        stock=Stocks(n.id_producto, n.cantidad)
+                        lista_stocks.append(stock)
+
+            return render(request, 'core/index.html', {'herra': productos, 'tipos':tipos, 'stocks': lista_stocks,'precios': lista_precios, 'fecha_actual': fecha_actual})
         else:
             print('Error al consultar la API')
             return render(request, 'core/error.html')
