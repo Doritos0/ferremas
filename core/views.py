@@ -25,7 +25,8 @@ def index(request):
 
     fecha_actual = datetime.now().strftime('%Y-%m-%d')
 
-    url = 'http://127.0.0.1:8001/'
+    url = 'https://jdmrvwcw-8001.brs.devtunnels.ms/'
+    #url = 'http://127.0.0.1:8001/'
     url_productos = url+'lista_productos/'
     url_tipos = url+'lista_tipos/'
     url_stocks = url+'lista_stocks/'
