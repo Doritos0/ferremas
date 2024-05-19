@@ -1,0 +1,33 @@
+{% for her in herra %}
+<div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="card text-center" style="border-radius: 5%; margin: 25px;">
+        <div class="card-header text-white bg-success">
+            Herramienta {{ her.nombre }}
+        </div>
+        <div class="card-body text-dark" style="background-color: white;">
+            {% for n in precios %}
+                {% if n.id_producto == her.id_producto %}
+                    {% if n.valor == 'Sin Precio' %}
+                        <p class="card-text">Sin Precio</p>
+                    {% else %}
+                        <p class="card-text">Precio ${{ n.valor }}</p>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            {% for n in stocks %}
+                {% if n.id_producto == her.id_producto %}
+                    {% if n.cantidad >= 100 %}
+                        <p class="card-text"><span>Stock:</span> +99</p>
+                    {% elif 100 > n.cantidad %}
+                        <p class="card-text"><span>Stock:</span> {{ n.cantidad }}</p>
+                    {% else %}
+                        <p class="card-text"><span>Sin Stock</span></p>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            <hr>
+            <p class="card-text">{{ her.id_tipo }}</p>
+        </div>
+    </div>
+</div>
+{% endfor %}
