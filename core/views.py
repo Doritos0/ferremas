@@ -81,9 +81,6 @@ def index(request):
                         if fecha_actual > n.fec_ini and fecha_actual < n.fec_ter:
                             valores = Valores(n.id_producto, n.precio)
                             lista_precios.append(valores)
-                        else:
-                            valores = Valores(p.id_producto, "Sin Precio")
-                            lista_precios.append(valores)
 
             # MANEJO DE STOCKS PRODUCTOS QUE SI TIENE STOCK
             for p in productos:
