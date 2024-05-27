@@ -13,6 +13,19 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 
+#IMPORT PARA TRANSBANK
+# Configurar Transbank
+from transbank.webpay.webpay_plus.transaction import Transaction
+
+TRANSACTION_KEY = 'X1q2w3e4r5t6'  # Cambia esto por tu llave secreta de producción
+COMMERCE_CODE = '597055555532'  # Cambia esto por tu código de comercio de producción
+ENVIRONMENT = 'INTEGRACION' 
+
+
+Transaction.commerce_code = COMMERCE_CODE
+Transaction.api_key_secret = TRANSACTION_KEY
+Transaction.environment = ENVIRONMENT
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .utils import cambio_moneda
 import requests
 from django.views.decorators.csrf import csrf_exempt
@@ -6,6 +6,12 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 
 from datetime import datetime
+
+#IMPORTS PARA TRANSBANK
+from django.urls import reverse
+from transbank.webpay.webpay_plus.transaction import Transaction
+from transbank.error.transbank_error import TransbankError
+import uuid
 
 # VARIABLES CAMBIO MONEDA
 dolar = int(float(cambio_moneda("F073.TCO.PRE.Z.D")))
@@ -130,3 +136,44 @@ def index(request):
     except Exception as e:
         print('Ocurrió un error:', e)
         return render(request, 'core/error.html')
+
+'''
+@csrf_exempt
+def webpay_init(request):
+    try:
+        buy_order = str(uuid.uuid4())
+        session_id = str(uuid.uuid4())
+        amount = 10000  # Monto de la transacción
+        return_url = 'index/'
+        
+        # Crear transacción con los parámetros correctos
+        response = Transaction.create(buy_order, session_id, amount, return_url)
+        
+        return render(request, 'webpay/init.html', {
+            'url': response['url'],
+            'token': response['token']
+        })
+    except TransbankError as e:
+        return render(request, 'webpay/error.html', {'error': str(e)})
+
+def webpay_return(request):
+    token = request.POST.get('token_ws')
+    try:
+        response = Transaction.commit(token)
+        if response['status'] == 'AUTHORIZED':
+            return redirect(reverse('webpay_final') + f"?token={token}")
+        else:
+            return render(request, 'webpay/error.html', {'error': 'Transacción no autorizada'})
+    except TransbankError as e:
+        return render(request, 'webpay/error.html', {'error': str(e)})
+
+def webpay_final(request):
+    token = request.GET.get('token')
+    try:
+        response = Transaction.status(token)
+        return render(request, 'webpay/final.html', {'response': response})
+    except TransbankError as e:
+        return render(request, 'webpay/error.html', {'error': str(e)})
+
+        
+'''
