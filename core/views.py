@@ -2,16 +2,18 @@ from django.shortcuts import render, redirect
 from .utils import cambio_moneda
 import requests
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
 
 from datetime import datetime
 
 #IMPORTS PARA TRANSBANK
-from django.urls import reverse
-from transbank.webpay.webpay_plus.transaction import Transaction
-from transbank.error.transbank_error import TransbankError
 import uuid
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from transbank.webpay.webpay_plus.transaction import Transaction
+
+from .transbank_config import *
 
 # VARIABLES CAMBIO MONEDA
 dolar = int(float(cambio_moneda("F073.TCO.PRE.Z.D")))
@@ -137,43 +139,33 @@ def index(request):
         print('Ocurrió un error:', e)
         return render(request, 'core/error.html')
 
-'''
-@csrf_exempt
-def webpay_init(request):
-    try:
-        buy_order = str(uuid.uuid4())
-        session_id = str(uuid.uuid4())
-        amount = 10000  # Monto de la transacción
-        return_url = 'index/'
-        
-        # Crear transacción con los parámetros correctos
-        response = Transaction.create(buy_order, session_id, amount, return_url)
-        
-        return render(request, 'webpay/init.html', {
-            'url': response['url'],
-            'token': response['token']
-        })
-    except TransbankError as e:
-        return render(request, 'webpay/error.html', {'error': str(e)})
+def initiate_payment(request):
+    buy_order = 'orden1'  # Identificador único de la transacción
+    session_id = str(uuid.uuid4())  # Identificador de sesión
+    amount = 10000  # Monto de la transacción
+    return_url = request.build_absolute_uri('/confirm/')  # URL de retorno
 
-def webpay_return(request):
-    token = request.POST.get('token_ws')
+    transaction = Transaction()  # Crear instancia de Transaction
+
     try:
-        response = Transaction.commit(token)
+        response = transaction.create(buy_order=buy_order, session_id=session_id, amount=amount, return_url=return_url)
+        return redirect(response['url'] + '?token_ws=' + response['token'])
+    except Exception as e:
+        return HttpResponse(f"Error: {e}")
+
+def confirm_payment(request):
+    token = request.GET.get('token_ws')
+    
+    if not token:
+        return HttpResponse("Token no encontrado en la solicitud.")
+
+    transaction = Transaction()  # Crear instancia de Transaction
+
+    try:
+        response = transaction.commit(token=token)
         if response['status'] == 'AUTHORIZED':
-            return redirect(reverse('webpay_final') + f"?token={token}")
+            return render(request, 'core/success.html', {'response': response})
         else:
-            return render(request, 'webpay/error.html', {'error': 'Transacción no autorizada'})
-    except TransbankError as e:
-        return render(request, 'webpay/error.html', {'error': str(e)})
-
-def webpay_final(request):
-    token = request.GET.get('token')
-    try:
-        response = Transaction.status(token)
-        return render(request, 'webpay/final.html', {'response': response})
-    except TransbankError as e:
-        return render(request, 'webpay/error.html', {'error': str(e)})
-
-        
-'''
+            return render(request, 'core/failure.html', {'response': response})
+    except Exception as e:
+        return HttpResponse(f"Error: {e}")
