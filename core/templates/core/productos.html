@@ -27,6 +27,9 @@
             {% endfor %}
             <hr>
             <p class="card-text">{{ her.id_tipo }}</p>
+            
+
+            <a href="{% url 'agregar_producto' her.id_producto %}" class="btn btn-outline-success">Agregar al Carrito</a>
         </div>
     </div>
 </div>

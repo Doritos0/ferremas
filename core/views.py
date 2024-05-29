@@ -5,6 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
 
+from core.compra import Compra
+
 from datetime import datetime
 
 #IMPORTS PARA TRANSBANK
@@ -29,6 +31,35 @@ class Stocks:
     def __init__(self, id_producto, cantidad):
         self.id_producto = id_producto
         self.cantidad = cantidad
+
+url = 'http://127.0.0.1:8001/'
+url_productos = url + 'lista_productos/'
+url_tipos = url + 'lista_tipos/'
+url_stocks = url + 'lista_stocks/'
+url_precios = url + 'lista_precios/'
+
+try:
+        response_productos = requests.get(url_productos)
+        response_tipos = requests.get(url_tipos)
+        response_stocks = requests.get(url_stocks)
+        response_precios = requests.get(url_precios)
+
+        if response_productos.status_code == 200:
+            data_productos = response_productos.json()
+            data_tipos = response_tipos.json()
+            data_stocks = response_stocks.json()
+            data_precios = response_precios.json()
+
+            productos = [type('', (object,), item)() for item in data_productos]
+            tipos = [type('', (object,), item)() for item in data_tipos]
+            stocks = [type('', (object,), item)() for item in data_stocks]
+            precios = [type('', (object,), item)() for item in data_precios]
+
+except Exception as e:
+        print('Ocurrió un error:', e)
+
+
+fecha_actual = datetime.now().strftime('%Y-%m-%d')
 
 @csrf_exempt
 def index(request):
@@ -140,10 +171,24 @@ def index(request):
         return render(request, 'core/error.html')
 
 def initiate_payment(request):
-    buy_order = 'orden1'  # Identificador único de la transacción
-    session_id = str(uuid.uuid4())  # Identificador de sesión
-    amount = 10000  # Monto de la transacción
+
+    if not request.session.session_key:
+        request.session.save()
+        
+    total_compra = request.session.get('total_compra', 0) 
+    print(total_compra)
+
+    if total_compra == 0:
+        print("El carro esta vacio")
+        return redirect("index")
+
+    orden = str(uuid.uuid4())
+    buy_order = orden[:4] # Identificador único de la transacción
+    session_id = request.session.session_key[:4]  # Identificador de sesión
+    amount = total_compra    # Monto de la transacción
     return_url = request.build_absolute_uri('/confirm/')  # URL de retorno
+
+    print("BUY_OrDER :",buy_order)
 
     transaction = Transaction()  # Crear instancia de Transaction
 
@@ -169,3 +214,51 @@ def confirm_payment(request):
             return render(request, 'core/failure.html', {'response': response})
     except Exception as e:
         return HttpResponse(f"Error: {e}")
+    
+
+#FUNCIONES PARA EL FUNCIONAMIENTO DE LA COMPRA
+def agregar_producto(request, id_producto):
+    producto = None
+    precio = None
+    compra = Compra(request)
+    numero = int(id_producto)
+    for p in productos:
+        if p.id_producto == numero:
+            print("LLEGAAAAAA")
+            print(p.nombre)
+            producto = p.nombre
+
+    for n in precios:
+        if n.id_producto == numero:
+            precio = n.precio
+
+    compra.agregar(id_producto, producto, precio)
+    return redirect("index")
+
+def eliminar_producto(request, id_producto):
+    compra = Compra(request)
+    compra.eliminar(id_producto)
+    return redirect("index")
+
+def restar_producto(request, id_producto):
+    print("VAMOOOOOOOO")
+    producto = None
+    precio = None
+    compra = Compra(request)
+    numero = int(id_producto)
+    for p in productos:
+        if p.id_producto == numero:
+            producto = p.nombre
+
+    for n in precios:
+        if n.id_producto == numero:
+            print(n.precio, "PRECIOOOOOOO")
+            precio = n.precio
+
+    compra.restar(numero, precio)
+    return redirect("index")
+
+def limpiar_compra (request):
+    compra = Compra(request)
+    compra.limpiar()
+    return redirect("index")
