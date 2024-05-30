@@ -216,7 +216,6 @@ def confirm_payment(request):
         return HttpResponse(f"Error: {e}")
     
 
-#FUNCIONES PARA EL FUNCIONAMIENTO DE LA COMPRA
 def agregar_producto(request, id_producto):
     producto = None
     precio = None
@@ -233,7 +232,9 @@ def agregar_producto(request, id_producto):
             precio = n.precio
 
     compra.agregar(id_producto, producto, precio)
-    return redirect("index")
+    previous_url = request.META.get('HTTP_REFERER', 'index')
+    # Redirigir a la URL anterior, o a 'index' si no está disponible
+    return redirect(previous_url)
 
 def eliminar_producto(request, id_producto):
     compra = Compra(request)
@@ -242,14 +243,9 @@ def eliminar_producto(request, id_producto):
 
 def restar_producto(request, id_producto):
     print("VAMOOOOOOOO")
-    producto = None
     precio = None
     compra = Compra(request)
     numero = int(id_producto)
-    for p in productos:
-        if p.id_producto == numero:
-            producto = p.nombre
-
     for n in precios:
         if n.id_producto == numero:
             print(n.precio, "PRECIOOOOOOO")

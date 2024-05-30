@@ -1,0 +1,4 @@
+.carrito-compras {
+    max-height: 600px; /* Ajusta esta altura según tus necesidades */
+    overflow-y: auto;
+}
