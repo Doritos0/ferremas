@@ -258,3 +258,8 @@ def limpiar_compra (request):
     compra = Compra(request)
     compra.limpiar()
     return redirect("index")
+
+def volver_de_compra(request):
+    compra = Compra(request)
+    compra.limpiar()
+    return redirect("index")
