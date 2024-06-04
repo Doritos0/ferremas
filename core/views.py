@@ -244,8 +244,6 @@ def restar_producto(request, id_producto):
     previous_url = request.META.get('HTTP_REFERER', 'index')
     return redirect(previous_url)
 
-
-
 def limpiar_compra (request):
     compra = Compra(request)
     compra.limpiar()
