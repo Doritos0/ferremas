@@ -12,9 +12,9 @@
         <h1>Pago Fallido</h1>
         <p>El pago no se ha podido procesar.</p>
         <p>Reason: {{ response.status }}</p>
+        <p><a href="{% url 'volver_de_compra' %}" class="btn btn-danger">Volver</a></p>
 
     </center>
-    <p><a href="{% url 'volver_de_compra' %}">Volver</a></p>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
