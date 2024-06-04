@@ -53,7 +53,9 @@ def agregar(request, id_producto):
 
             for n in precios:
                 if n.id_producto == numero:
-                    precio = n.precio
+                        if fecha_actual >= n.fec_ini and fecha_actual <= n.fec_ter:
+                            print("TA FUNCIONANDO")
+                            precio = n.precio
 
             for n in stocks:
                  if n.id_producto == numero:
