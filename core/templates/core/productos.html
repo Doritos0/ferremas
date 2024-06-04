@@ -21,12 +21,12 @@
 
                     {% for n in stocks %}
                         {% if n.id_producto == her.id_producto %}
-                            {% if n.cantidad >= 100 %}
+                            {% if n.cantidad == 0 %}
+                                <p class="card-text"><span>Sin Stock</span></p>
+                            {% elif n.cantidad >= 100 %}
                                 <p class="card-text"><span>Stock:</span> +99</p>
                             {% elif 100 > n.cantidad %}
                                 <p class="card-text"><span>Stock:</span> {{ n.cantidad }}</p>
-                            {% elif n.cantidad == 0 %}
-                                <p class="card-text"><span>Sin Stock</span></p>
                             {% else %}
                                 <p class="card-text"><span>Sin Stock</span></p>
                             {% endif %}
