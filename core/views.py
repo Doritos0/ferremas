@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .utils import cambio_moneda
+from .utils import cambio_moneda, agregar, restar
 import requests
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
@@ -31,32 +31,6 @@ class Stocks:
     def __init__(self, id_producto, cantidad):
         self.id_producto = id_producto
         self.cantidad = cantidad
-
-url = 'http://127.0.0.1:8001/'
-url_productos = url + 'lista_productos/'
-url_tipos = url + 'lista_tipos/'
-url_stocks = url + 'lista_stocks/'
-url_precios = url + 'lista_precios/'
-
-try:
-        response_productos = requests.get(url_productos)
-        response_tipos = requests.get(url_tipos)
-        response_stocks = requests.get(url_stocks)
-        response_precios = requests.get(url_precios)
-
-        if response_productos.status_code == 200:
-            data_productos = response_productos.json()
-            data_tipos = response_tipos.json()
-            data_stocks = response_stocks.json()
-            data_precios = response_precios.json()
-
-            productos = [type('', (object,), item)() for item in data_productos]
-            tipos = [type('', (object,), item)() for item in data_tipos]
-            stocks = [type('', (object,), item)() for item in data_stocks]
-            precios = [type('', (object,), item)() for item in data_precios]
-
-except Exception as e:
-        print('Ocurrió un error:', e)
 
 
 fecha_actual = datetime.now().strftime('%Y-%m-%d')
@@ -117,9 +91,10 @@ def index(request):
             for p in productos:
                 for n in precios:
                     if n.id_producto == p.id_producto:
-                        if fecha_actual > n.fec_ini and fecha_actual < n.fec_ter:
+                        if fecha_actual >= n.fec_ini and fecha_actual <= n.fec_ter:
                             valores = Valores(n.id_producto, n.precio)
                             lista_precios.append(valores)
+            
 
             # MANEJO DE STOCKS PRODUCTOS QUE SI TIENE STOCK
             for p in productos:
@@ -209,7 +184,44 @@ def confirm_payment(request):
     try:
         response = transaction.commit(token=token)
         if response['status'] == 'AUTHORIZED':
-            return render(request, 'core/success.html', {'response': response})
+            compra = Compra(request)
+            productos_en_carrito = compra.compra  # Diccionario de productos en el carrito
+
+            url_base = 'http://127.0.0.1:8001/'
+            headers = {
+                'Content-Type': 'application/json'
+            }
+
+            # Iterar sobre los productos en el carrito para actualizar el stock
+            for id_producto, detalles in productos_en_carrito.items():
+                cantidad_comprada = detalles['Unidades']
+                id_stock = detalles.get('id_stock')  # Suponiendo que id_stock se ha guardado en el carrito
+
+                if id_stock:
+                    # Obtener el stock actual del producto
+                    url_get_stock = f'{url_base}detalle_stock/{id_stock}'
+                    response_get = requests.get(url_get_stock)
+                    if response_get.status_code == 200:
+                        data = response_get.json()
+                        stock_actual = data['cantidad']
+
+                        # Calcular el nuevo stock
+                        nuevo_stock = max(0, stock_actual - cantidad_comprada)
+                        
+                        # Actualizar el stock
+                        url_mod_stock = f'{url_base}detalle_stock/{id_stock}'
+                        data = {
+                            'cantidad': nuevo_stock  # Datos que deseas actualizar
+                        }
+                        response_stock = requests.patch(url_mod_stock, json=data, headers=headers)
+                        if response_stock.status_code == 400:
+                            print(f'Error al actualizar el stock para el producto {id_producto}')
+                        else:
+                            print(f'Stock actualizado para el producto {id_producto}')
+                    else:
+                        print(f'Error al obtener el stock actual para el producto {id_producto}')
+
+            return render(request, 'core/success.html', {'response': response,'response_stock' : response_stock})
         else:
             return render(request, 'core/failure.html', {'response': response})
     except Exception as e:
@@ -217,24 +229,10 @@ def confirm_payment(request):
     
 
 def agregar_producto(request, id_producto):
-    producto = None
-    precio = None
-    compra = Compra(request)
-    numero = int(id_producto)
-    for p in productos:
-        if p.id_producto == numero:
-            print("LLEGAAAAAA")
-            print(p.nombre)
-            producto = p.nombre
-
-    for n in precios:
-        if n.id_producto == numero:
-            precio = n.precio
-
-    compra.agregar(id_producto, producto, precio)
+    agregar(request, id_producto)
     previous_url = request.META.get('HTTP_REFERER', 'index')
-    # Redirigir a la URL anterior, o a 'index' si no está disponible
     return redirect(previous_url)
+
 
 def eliminar_producto(request, id_producto):
     compra = Compra(request)
@@ -242,17 +240,11 @@ def eliminar_producto(request, id_producto):
     return redirect("index")
 
 def restar_producto(request, id_producto):
-    print("VAMOOOOOOOO")
-    precio = None
-    compra = Compra(request)
-    numero = int(id_producto)
-    for n in precios:
-        if n.id_producto == numero:
-            print(n.precio, "PRECIOOOOOOO")
-            precio = n.precio
+    restar(request, id_producto)
+    previous_url = request.META.get('HTTP_REFERER', 'index')
+    return redirect(previous_url)
 
-    compra.restar(numero, precio)
-    return redirect("index")
+
 
 def limpiar_compra (request):
     compra = Compra(request)

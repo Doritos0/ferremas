@@ -10,22 +10,21 @@ class Compra:
         else:
             self.compra= compra
 
-    def agregar(self,id_producto, producto, precio):
+    def agregar(self, id_producto, producto, precio, id_stock):
         id = str(id_producto)
         if id not in self.compra.keys():
-            self.compra[id]={
-                "id_producto" : id_producto,
+            self.compra[id] = {
+                "id_producto": id_producto,
                 "nombre": producto,
                 "precio": precio,
-                "Unidades":1,
-
+                "Unidades": 1,
+                "id_stock": id_stock  # Agregar id_stock aquí
             }
         else:
-            self.compra[id]["Unidades"]+=1
-            self.compra[id]["precio"]+=precio
+            self.compra[id]["Unidades"] += 1
+            self.compra[id]["precio"] += precio
 
-        print("ESTA ES LA COMPRA",self.session["compra"])
-        
+        print("ESTA ES LA COMPRA", self.session["compra"])
         self.guardar_compra()
     
     def guardar_compra(self):
