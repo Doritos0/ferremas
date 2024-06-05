@@ -92,8 +92,14 @@ def index(request):
                 for n in precios:
                     if n.id_producto == p.id_producto:
                         if fecha_actual >= n.fec_ini and fecha_actual <= n.fec_ter:
-                            valores = Valores(n.id_producto, n.precio)
-                            lista_precios.append(valores)
+                            if p.oferta == 1:
+                                n.precio = n.precio - (n.precio * (p.porcentaje/100))
+                                valores = Valores(n.id_producto, n.precio)
+                                lista_precios.append(valores)
+                            else:
+                                valores = Valores(n.id_producto, n.precio)
+                                lista_precios.append(valores)
+
             
 
             # MANEJO DE STOCKS PRODUCTOS QUE SI TIENE STOCK

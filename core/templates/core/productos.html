@@ -1,8 +1,6 @@
-<div class="row">
+
     {% for her in herra %}
-        {% if forloop.counter0|divisibleby:2 %}
-            </div><div class="row">
-        {% endif %}
+        {% if her.oferta == 0 %}
         <div class="col-lg-6 col-md-12 col-sm-12">
             <div class="card text-center" style="border-radius: 5%; margin: 25px;">
                 <div class="card-header text-white bg-success">
@@ -42,5 +40,5 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     {% endfor %}
-</div>

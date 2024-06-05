@@ -47,15 +47,15 @@ def agregar(request, id_producto):
             numero = int(id_producto)
             for p in productos:
                 if p.id_producto == numero:
-                    print("LLEGAAAAAA")
-                    print(p.nombre)
                     producto = p.nombre
-
-            for n in precios:
-                if n.id_producto == numero:
-                        if fecha_actual >= n.fec_ini and fecha_actual <= n.fec_ter:
-                            print("TA FUNCIONANDO")
-                            precio = n.precio
+                    for n in precios:
+                        if n.id_producto == numero:
+                                if fecha_actual >= n.fec_ini and fecha_actual <= n.fec_ter:
+                                    if p.oferta == 1:
+                                        precio = n.precio - (n.precio * (p.porcentaje/100))
+                                        precio = round(precio, 2)
+                                    else:
+                                        precio = n.precio
 
             for n in stocks:
                  if n.id_producto == numero:
@@ -78,23 +78,35 @@ def agregar(request, id_producto):
 
 def restar(request, id_producto):
     url = 'http://127.0.0.1:8001/'
+    url_productos = url + 'lista_productos/'
     url_precios = url + 'lista_precios/'
 
     try:
+            response_productos = requests.get(url_productos)
             response_precios = requests.get(url_precios)
 
             if response_precios.status_code == 200:
+                data_productos = response_productos.json()
                 data_precios = response_precios.json()
 
+                productos = [type('', (object,), item)() for item in data_productos]
                 precios = [type('', (object,), item)() for item in data_precios]
+
                 print("VAMOOOOOOOO")
                 precio = None
                 compra = Compra(request)
                 numero = int(id_producto)
-                for n in precios:
-                    if n.id_producto == numero:
-                        print(n.precio, "PRECIOOOOOOO")
-                        precio = n.precio
+                for p in productos:
+                    if p.id_producto == numero:
+                        for n in precios:
+                            if n.id_producto == numero:
+                                    if fecha_actual >= n.fec_ini and fecha_actual <= n.fec_ter:
+                                        if p.oferta == 1:
+                                            precio = n.precio - (n.precio * (p.porcentaje/100))
+                                            precio = round(precio, 2)
+                                        else:
+                                            precio = n.precio
+                
 
                 compra.restar(numero, precio)
 
