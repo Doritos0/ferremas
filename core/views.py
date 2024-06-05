@@ -135,9 +135,6 @@ def index(request):
                         stock = Stocks(p, "Sin Stock")
                         lista_stocks.append(stock)
 
-
-            for n in lista_precios:
-                print(n.id_producto, "TIENE ESTE PRECIO ",n.valor)
             
             # MANEJO DEL CAMBIO DE MONEDA
             if request.method == 'POST':
@@ -149,8 +146,6 @@ def index(request):
                     for n in lista_precios:
                         n.valor = round((n.valor / euro), 2)
 
-            for n in lista_precios:
-                print(n.id_producto, "TIENE ESTE PRECIO ",n.valor)
 
             # Verifica si la solicitud es AJAX
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
