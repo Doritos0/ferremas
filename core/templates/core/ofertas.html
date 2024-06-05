@@ -1,53 +1,54 @@
-{% with count=0 %}
+{% if oferta == False %}
+    <div class="col-12">
+        <div class="alert alert-info text-center" role="alert">
+            No hay ofertas por el momento.
+        </div>
+    </div>
+{% else %}
+
+<span class="border border-dark-subtle border-5 bg-light ">
     {% for her in herra %}
         {% if her.oferta == 1 %}
-            {% with count=count|add:1 %}
-                <div class="col-lg-6 col-md-12 col-sm-12">
-                    <div class="card text-center" style="border-radius: 5%; margin: 25px;">
-                        <div class="card-header text-white bg-success">
-                            Herramienta {{ her.nombre }}
-                        </div>
-                        <div class="card-body text-dark" style="background-color: white;">
-                            {% for n in precios %}
-                                {% if n.id_producto == her.id_producto %}
-                                    {% if n.valor == 'Sin Precio' %}
-                                        <p class="card-text">Sin Precio</p>
-                                    {% else %}
-                                        <p class="card-text">Precio ${{ n.valor }} / <span style="color: red;">-{{ her.porcentaje }}%</span></p>
-                                    {% endif %}
+            <div class="col-lg-6 col-md-12 col-sm-12">
+                <div class="card text-center" style="border-radius: 5%; margin: 25px;">
+                    <div class="card-header text-white bg-success">
+                        Herramienta {{ her.nombre }}
+                    </div>
+                    <div class="card-body text-dark" style="background-color: white;">
+                        {% for n in precios %}
+                            {% if n.id_producto == her.id_producto %}
+                                {% if n.valor == 'Sin Precio' %}
+                                    <p class="card-text">Sin Precio</p>
+                                {% else %}
+                                    <p class="card-text">Precio ${{ n.valor }} / <span style="color: red;">-{{ her.porcentaje }}%</span></p>
                                 {% endif %}
-                            {% endfor %}
-
-                            {% for n in stocks %}
-                                {% if n.id_producto == her.id_producto %}
-                                    {% if n.cantidad == 0 %}
-                                        <p class="card-text"><span>Sin Stock</span></p>
-                                    {% elif n.cantidad >= 100 %}
-                                        <p class="card-text"><span>Stock:</span> +99</p>
-                                    {% elif 100 > n.cantidad %}
-                                        <p class="card-text"><span>Stock:</span> {{ n.cantidad }}</p>
-                                    {% else %}
-                                        <p class="card-text"><span>Sin Stock</span></p>
-                                    {% endif %}
+                            {% endif %}
+                        {% endfor %}
+    
+                        {% for n in stocks %}
+                            {% if n.id_producto == her.id_producto %}
+                                {% if n.cantidad == 0 %}
+                                    <p class="card-text"><span>Sin Stock</span></p>
+                                {% elif n.cantidad >= 100 %}
+                                    <p class="card-text"><span>Stock:</span> +99</p>
+                                {% elif 100 > n.cantidad %}
+                                    <p class="card-text"><span>Stock:</span> {{ n.cantidad }}</p>
+                                {% else %}
+                                    <p class="card-text"><span>Sin Stock</span></p>
                                 {% endif %}
-                            {% endfor %}
-                            
-                            <hr>
-                            <p class="card-text">{{ her.id_tipo }}</p>
-                            
-                            <a href="{% url 'agregar_producto' her.id_producto %}" class="btn btn-outline-success">Agregar al Carrito</a>
-                        </div>
+                            {% endif %}
+                        {% endfor %}
+                                
+                        <hr>
+                        <p class="card-text">{{ her.id_tipo }}</p>
+                                
+                        <a href="{% url 'agregar_producto' her.id_producto %}" class="btn btn-outline-success">Agregar al Carrito</a>
                     </div>
                 </div>
-            {% endwith %}
+            </div>
+    
         {% endif %}
     {% endfor %}
+    </span>
+{% endif %}
     
-    {% if count == 0 %}
-        <div class="col-12">
-            <div class="alert alert-info text-center" role="alert">
-                No hay ofertas por el momento.
-            </div>
-        </div>
-    {% endif %}
-{% endwith %}

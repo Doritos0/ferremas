@@ -57,6 +57,10 @@ def index(request):
             data_stocks = response_stocks.json()
             data_precios = response_precios.json()
 
+            #VARIABLE PARA VER SI HAY OFERTAS ACTIVAS
+
+            ofertas = False
+
             # LISTA_PRECIOS QUE LE PASARE AL HTML
             lista_precios = []
             lista_stocks = []
@@ -76,16 +80,8 @@ def index(request):
             # AGREGO TODOS LOS PRODUCTOS A UNA LISTA PARA REALIZAR LA VERIFICACION DE PRECIOS Y STOCKS
             for n in productos:
                 lista_idprod.append(n.id_producto)
-
-            # MANEJO DEL CAMBIO DE MONEDA
-            if request.method == 'POST':
-                moneda = request.POST.get('moneda')
-                if moneda == '2':
-                    for n in precios:
-                        n.precio = round((n.precio / dolar), 2)
-                elif moneda == '3':
-                    for n in precios:
-                        n.precio = round((n.precio / euro), 2)
+                if n.oferta == 1:
+                    ofertas = True
 
             # MANEJO DE PRECIOS PRODUCTOS QUE SI TIENEN PRECIO
             for p in productos:
@@ -139,12 +135,29 @@ def index(request):
                         stock = Stocks(p, "Sin Stock")
                         lista_stocks.append(stock)
 
+
+            for n in lista_precios:
+                print(n.id_producto, "TIENE ESTE PRECIO ",n.valor)
+            
+            # MANEJO DEL CAMBIO DE MONEDA
+            if request.method == 'POST':
+                moneda = request.POST.get('moneda')
+                if moneda == '2':
+                    for n in lista_precios:
+                        n.valor = round((n.valor / dolar), 2)
+                elif moneda == '3':
+                    for n in lista_precios:
+                        n.valor = round((n.valor / euro), 2)
+
+            for n in lista_precios:
+                print(n.id_producto, "TIENE ESTE PRECIO ",n.valor)
+
             # Verifica si la solicitud es AJAX
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 html = render_to_string('core/productos.html', {'herra': productos, 'precios': lista_precios, 'stocks': lista_stocks})
                 return JsonResponse({'html': html})
 
-            return render(request, 'core/index.html', {'herra': productos, 'tipos': tipos, 'stocks': lista_stocks, 'precios': lista_precios, 'fecha_actual': fecha_actual})
+            return render(request, 'core/index.html', {'herra': productos, 'tipos': tipos, 'stocks': lista_stocks, 'precios': lista_precios, 'fecha_actual': fecha_actual, 'oferta' : ofertas})
         else:
             return render(request, 'core/error.html')
     except Exception as e:
