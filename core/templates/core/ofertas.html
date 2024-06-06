@@ -6,11 +6,10 @@
     </div>
 {% else %}
 
-<span class="border border-dark-subtle border-5 bg-light ">
     {% for her in herra %}
         {% if her.oferta == 1 %}
-            <div class="col-lg-6 col-md-12 col-sm-12">
-                <div class="card text-center" style="border-radius: 5%; margin: 25px;">
+        <div class="col-lg-6 col-md-12 col-sm-12">
+            <div class="card text-center" style="border-radius: 5%; margin: 25px;">
                     <div class="card-header text-white bg-success">
                         Herramienta {{ her.nombre }}
                     </div>
@@ -49,6 +48,5 @@
     
         {% endif %}
     {% endfor %}
-    </span>
 {% endif %}
     

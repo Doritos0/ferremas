@@ -4,7 +4,8 @@ import requests
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
-
+import json
+from django.urls import reverse
 from core.compra import Compra
 
 from datetime import datetime
@@ -158,42 +159,63 @@ def index(request):
     except Exception as e:
         print('Ocurrió un error:', e)
         return render(request, 'core/error.html')
-
-def initiate_payment(request):
-
-    if not request.session.session_key:
-        request.session.save()
-        
-    total_compra = request.session.get('total_compra', 0) 
-    print(total_compra)
-
+    
+def envio(request):
+    total_compra = request.session.get('total_compra', 0)
     if total_compra == 0:
         print("El carro esta vacio")
         return redirect("index")
+    return render(request, 'core/envio.html')
 
-    orden = str(uuid.uuid4())
-    buy_order = orden[:4] # Identificador único de la transacción
-    session_id = request.session.session_key[:4]  # Identificador de sesión
-    amount = total_compra    # Monto de la transacción
-    return_url = request.build_absolute_uri('/confirm/')  # URL de retorno
+def initiate_payment(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        direccion = data.get('direccion', 'Sin Direccion')
+        correo = data.get('correo')
 
-    print("BUY_OrDER :",buy_order)
+        if not correo:
+            return JsonResponse({'status': 'ERROR', 'message': 'Correo es requerido'})
 
-    transaction = Transaction()  # Crear instancia de Transaction
+        if not request.session.session_key:
+            request.session.save()
 
-    try:
-        response = transaction.create(buy_order=buy_order, session_id=session_id, amount=amount, return_url=return_url)
-        return redirect(response['url'] + '?token_ws=' + response['token'])
-    except Exception as e:
-        return HttpResponse(f"Error: {e}")
+        total_compra = request.session.get('total_compra', 0)
+        if total_compra == 0:
+            return JsonResponse({'status': 'ERROR', 'message': 'El carro esta vacio'})
+
+        orden = str(uuid.uuid4())
+        buy_order = orden[:4]
+        session_id = request.session.session_key[:4]
+        amount = total_compra
+        return_url = request.build_absolute_uri(reverse('confirm_payment'))
+
+        transaction = Transaction()
+
+        try:
+            response = transaction.create(buy_order=buy_order, session_id=session_id, amount=amount, return_url=return_url)
+            # Store the order details in the session for later use
+            request.session['order_details'] = {
+                "direccion": direccion,
+                "correo": correo,
+                "detalle_pedido": str(json.dumps(request.session.get('compra', {}))),
+                "fecha_pedido": str(datetime.now().date()),
+                "tipo_pedido": 0 if direccion == 'Sin Direccion' else 1,
+                "estado_pedido": 'En proceso',
+                "total": amount
+            }
+            return JsonResponse({'status': 'AUTHORIZED', 'redirect_url': response['url'] + '?token_ws=' + response['token']})
+        except Exception as e:
+            return JsonResponse({'status': 'ERROR', 'message': str(e)})
+
+    return JsonResponse({'status': 'ERROR', 'message': 'Método no permitido'})
 
 def confirm_payment(request):
     token = request.GET.get('token_ws')
-    
+
     if not token:
         return HttpResponse("Token no encontrado en la solicitud.")
 
-    transaction = Transaction()  # Crear instancia de Transaction
+    transaction = Transaction()
 
     try:
         response = transaction.commit(token=token)
@@ -235,7 +257,23 @@ def confirm_payment(request):
                     else:
                         print(f'Error al obtener el stock actual para el producto {id_producto}')
 
-            return render(request, 'core/success.html', {'response': response,'response_stock' : response_stock})
+            order_details = request.session.get('order_details', {})
+            if not order_details:
+                return HttpResponse("No se encontraron detalles de la orden.")
+
+            print(order_details)
+
+            url_api = 'http://127.0.0.1:8001/lista_pedidos/'
+            headers = {
+                'Content-Type': 'application/json'
+            }
+
+            response_api = requests.post(url_api, json=order_details, headers=headers)
+            if response_api.status_code in [200, 201]:
+                return render(request, 'core/success.html', {'response': response,'response_stock' : response_stock})
+            else:
+                return HttpResponse("Error al enviar los detalles de la orden a la API.")
+
         else:
             return render(request, 'core/failure.html', {'response': response})
     except Exception as e:
