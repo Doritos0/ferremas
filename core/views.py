@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from .utils import cambio_moneda, agregar, restar
 import requests
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.template.loader import render_to_string
 import json
 from django.urls import reverse
@@ -17,6 +17,7 @@ from django.http import HttpResponse
 from transbank.webpay.webpay_plus.transaction import Transaction
 
 from .transbank_config import *
+
 
 # VARIABLES CAMBIO MONEDA
 dolar = int(float(cambio_moneda("F073.TCO.PRE.Z.D")))
@@ -35,6 +36,174 @@ class Stocks:
 
 
 fecha_actual = datetime.now().strftime('%Y-%m-%d')
+
+def create(request):
+    return render(request, 'core/create.html')
+
+def nuevo_prod(request):
+    if request.method == 'POST':
+        url_producto = f'http://127.0.0.1:8001/lista_productos/'
+        nombre = request.POST.get('nombre_producto')
+        id_tipo = request.POST.get('tipo_producto')
+
+        data = {'nombre':nombre, 'oferta': 0, 'porcentaje':0, 'id_tipo': id_tipo}
+
+        response = requests.post(url_producto, data=data)
+
+        if response.status_code == 201:
+            producto = response.json()
+
+            id_producto = producto.get('id_producto')
+
+            url_stock = f'http://127.0.0.1:8001/lista_stocks/'
+            url_precio = f'http://127.0.0.1:8001/lista_precios/'
+
+
+            cantidad = request.POST.get('cantidad')
+            precio = request.POST.get('precio')
+            stock = {'id_producto': id_producto, 'cantidad': cantidad}
+            precio_obj = {'id_producto': id_producto, 'fec_ini': '2024-07-01', 'fec_ter': '2024-07-31', 'precio': precio}
+
+            response_stock = requests.post(url_stock, data=stock)
+            response_precio = requests.post(url_precio, data=precio_obj)
+
+            if response_stock.status_code and response_precio.status_code == 201:
+                return redirect(crud)
+            else:
+                return redirect(crud)
+        else:
+            print("Salio mal")
+
+    return redirect(crud)
+
+def crud(request):
+    url = 'http://127.0.0.1:8001/'
+    url_productos = url + 'lista_productos/'
+
+    
+    try:
+        response_productos = requests.get(url_productos)
+        if response_productos.status_code == 200:
+            data_productos = response_productos.json()
+            
+            return render(request, 'core/crud.html', {'data': data_productos})
+
+    except Exception as e:
+        print('Ocurrió un error:', e)
+        return render(request, 'core/error.html')
+    
+
+def crud_eliminar(request, id):
+    url = 'http://127.0.0.1:8001/detalle_producto/'+id
+    print(url)
+    response = requests.delete(url)
+
+
+    if response.status_code == 204:  
+        return HttpResponseRedirect(reverse('crud')) 
+    else:
+        return HttpResponse(f'Error al eliminar el producto: {response.status_code}', status=response.status_code)
+
+def crud_modificar(request, id):
+    url_producto = f'http://127.0.0.1:8001/detalle_producto/{id}'
+    url_stock = f'http://127.0.0.1:8001/detalle_stock/{id}'
+    url_precios = f'http://127.0.0.1:8001/detalle_precio/{id}'
+
+    try:
+        response_producto = requests.get(url_producto)
+        response_stock = requests.get(url_stock)
+        response_precios = requests.get(url_precios)
+
+        if response_producto.status_code == 200:
+            data_producto = response_producto.json()
+            data_stock = response_stock.json()
+            data_precio = response_precios.json()
+
+            # Procesamiento de los datos recibidos...
+            
+            return render(request, 'core/modificar.html', {'producto': data_producto, 'stock': data_stock, 'precio': data_precio})
+        else:
+            return render(request, 'core/error.html')
+    
+    except json.JSONDecodeError as e:
+        print(f'Error de decodificación JSON: {str(e)}')
+        return render(request, 'core/error.html', {'error_message': 'Error al decodificar la respuesta JSON'})
+
+    except requests.RequestException as e:
+        print(f'Error en la solicitud HTTP: {str(e)}')
+        return render(request, 'core/error.html', {'error_message': 'Error en la solicitud HTTP'})
+
+    except Exception as e:
+        print(f'Otro error: {str(e)}')
+        return render(request, 'core/error.html', {'error_message': 'Error desconocido'})
+
+def mod_nombre_prod(request, id):
+    if request.method == 'POST':
+        nuevo_nombre = request.POST.get('nombre')
+        url_producto = f'http://127.0.0.1:8001/detalle_producto/{id}'
+        payload = {'nombre': nuevo_nombre}
+        response = requests.patch(url_producto, json=payload)
+
+        if response.status_code == 200:
+            return redirect('crud_modificar', id=id)
+        else:
+            return redirect('crud_modificar', id=id)
+        
+def mod_oferta_prod(request, id):
+    if request.method == 'POST':
+        # Obtener los datos del formulario
+        oferta = request.POST.get('oferta')
+        porcentaje = request.POST.get('porcentaje')
+
+        
+        payload = {'oferta': oferta, 'porcentaje':porcentaje}
+        url_producto = f'http://127.0.0.1:8001/detalle_producto/{id}'
+
+        
+        response = requests.patch(url_producto, json=payload)
+
+        if response.status_code == 200:
+            return redirect('crud_modificar', id=id)
+        else:
+            return redirect('crud_modificar', id=id)
+
+def mod_tipo_prod(request, id):
+    if request.method == 'POST':
+        id_tipo = request.POST.get('tipo_producto')
+        print(id_tipo)
+        url_producto = f'http://127.0.0.1:8001/detalle_producto/{id}'
+        payload = {'id_tipo': id_tipo}
+        response = requests.patch(url_producto, json=payload)
+
+        if response.status_code == 200:
+            return redirect('crud_modificar', id=id)
+        else:
+            return redirect('crud_modificar', id=id)
+        
+def mod_stock_prod(request, id):
+    if request.method == 'POST':
+        cantidad = request.POST.get('cantidad')
+        url_stock = f'http://127.0.0.1:8001/detalle_stock/{id}'
+        payload = {'cantidad': cantidad}
+        response = requests.patch(url_stock, json=payload)
+
+        if response.status_code == 200:
+            return redirect('crud_modificar', id=id)
+        else:
+            return redirect('crud_modificar', id=id)
+        
+def mod_precio_prod(request, id):
+    if request.method == 'POST':
+        precio = request.POST.get('precio')
+        url_precio = f'http://127.0.0.1:8001/detalle_precio/{id}'
+        payload = {'precio': precio}
+        response = requests.patch(url_precio, json=payload)
+
+        if response.status_code == 200:
+            return redirect('crud_modificar', id=id)
+        else:
+            return redirect('crud_modificar', id=id)
+
 
 @csrf_exempt
 def index(request):
@@ -147,6 +316,7 @@ def index(request):
                     for n in lista_precios:
                         n.valor = round((n.valor / euro), 2)
 
+            
 
             # Verifica si la solicitud es AJAX
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':

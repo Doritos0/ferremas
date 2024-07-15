@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Ferremas CRUD</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+    
+    <link rel="shortcut icon" href='{% static "img/herramientas.png" %}' type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container-fluid bg-success">
+        <div class="row align-items-center justify-content-center">
+            <div class="col-6">
+                <h1 style="padding: 15px; color: white;">CRUD</h1>
+            </div>
+            <div class="col-6" >
+                <a href="{% url 'create' %}" class="btn btn-dark" style="float: right;">Crear Producto</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+            <table class="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Opciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for n in data %}
+                <tr>
+                    <th scope="row">{{ n.id_producto }}</th>
+                    <td>{{ n.nombre }}</td>
+                    <td>{{ n.id_tipo }}</td>
+                    <td><a class="btn btn-danger" href="{% url 'crud_eliminar' n.id_producto %}">Eliminar</a> <a class="btn btn-primary" href="{% url 'crud_modificar' n.id_producto %}">Modificar</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
